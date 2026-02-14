@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DVA • BI Pós-Vendas (Funcional)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Montserrat', 'sans-serif'],
+          },
+          colors: {
+            jeep: '#FFBA00',
+            ram: '#B81822',
+            dark: {
+              950: '#020617',
+              900: '#0f172a',
+              800: '#1e293b',
+            }
+          },
+          boxShadow: {
+            'glow-gold': '0 0 20px rgba(250, 204, 21, 0.3)',
+            'glow-red': '0 0 20px rgba(184, 24, 34, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+    
+    main { -webkit-overflow-scrolling: touch; }
+h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* Glass Effect */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+    .glass-card:hover { border-color: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.3s ease-out both; }
+    @keyframes fadeIn { from{opacity:0; transform: translateY(5px);} to{opacity:1; transform:none;} }
+    
+    .loading-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  </style>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col md:flex-row overflow-hidden h-screen">
+
+  <aside class="w-full md:w-64 bg-dark-900 border-r border-white/5 flex flex-col justify-between z-50 md:h-screen fixed md:relative bottom-0 md:bottom-auto glass-panel">
+    <div class="hidden md:flex flex-col items-center justify-center h-24 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-white rounded flex items-center justify-center text-black font-black font-display text-xl">D</div>
+        <span class="text-xl font-display font-bold text-white tracking-widest">DVA<span class="text-jeep">.BI</span></span>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">Pós-Vendas Manager</p>
+    </div>
+
+    <nav class="flex-1 flex md:flex-col justify-around md:justify-start md:p-4 gap-2">
+      <button class="nav-btn flex flex-col md:flex-row items-center md:gap-3 p-3 md:px-4 md:py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all w-full group"
+              data-action="tab" data-tab="dashboard">
+        <i class="fa-solid fa-chart-pie text-lg md:text-sm group-[.active]:text-jeep"></i>
+        <span class="text-[10px] md:text-sm font-semibold md:mt-0 group-[.active]:text-white">Dashboard</span>
+      </button>
+
+      <button class="nav-btn flex flex-col md:flex-row items-center md:gap-3 p-3 md:px-4 md:py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all w-full group"
+              data-action="tab" data-tab="dados">
+        <i class="fa-solid fa-table-list text-lg md:text-sm group-[.active]:text-jeep"></i>
+        <span class="text-[10px] md:text-sm font-semibold md:mt-0 group-[.active]:text-white">Dados & Metas</span>
+      </button>
+
+      <button class="nav-btn flex flex-col md:flex-row items-center md:gap-3 p-3 md:px-4 md:py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all w-full group"
+              data-action="tab" data-tab="config">
+        <i class="fa-solid fa-gear text-lg md:text-sm group-[.active]:text-jeep"></i>
+        <span class="text-[10px] md:text-sm font-semibold md:mt-0 group-[.active]:text-white">Config</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="flex-1 min-h-0 overflow-y-auto relative pb-32 md:pb-0 bg-dark-950">
+    <div class="md:hidden flex items-center justify-between p-4 bg-dark-900/90 backdrop-blur sticky top-0 z-40 border-b border-white/5">
+      <span class="text-lg font-display font-bold text-white">DVA<span class="text-jeep">.BI</span></span>
+      <div id="mobileMonthDisplay" class="text-xs font-bold text-slate-300 bg-white/10 px-2 py-1 rounded">--/--</div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+      
+      <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-display font-black text-white tracking-tight">Visão Geral <span class="text-transparent bg-clip-text bg-gradient-to-r from-jeep to-ram">2026</span></h1>
+          <p class="text-sm text-slate-400 mt-1">Acompanhamento de performance e projeção de fechamento.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="bg-dark-900 border border-white/10 rounded-xl px-3 py-2 flex items-center gap-2">
+            <i class="fa-regular fa-calendar text-jeep text-xs"></i>
+            <select id="monthSelect" class="bg-transparent text-sm text-white font-bold outline-none cursor-pointer">
+              </select>
+          </div>
+          <div class="bg-dark-900 border border-white/10 rounded-xl px-3 py-2">
+             <span id="lastUpdateText" class="text-[10px] text-slate-400 font-mono">Atualizado: --:--</span>
+          </div>
+        </div>
+      </header>
+
+      <section id="tab-dashboard" class="tab-content space-y-6 fade-in">
+        
+        <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-jeep/5 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="flex flex-col md:flex-row justify-between gap-6 relative z-10">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Ritmo do Mês (Dias Úteis)</h2>
+                <span id="paceBadge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-800 text-slate-400">Calculando...</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span id="timePctBig" class="text-5xl md:text-6xl font-display font-black text-white tracking-tighter">0%</span>
+                <span class="text-sm text-slate-400">do tempo decorrido</span>
+              </div>
+            </div>
+            
+            <div class="flex gap-8 text-right">
+              <div>
+                <p class="text-[10px] uppercase font-bold text-slate-500">Decorridos</p>
+                <p id="workdaysBig" class="text-2xl font-display font-bold text-white">0/0</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase font-bold text-slate-500">Restantes</p>
+                <p id="remainingBig" class="text-2xl font-display font-bold text-jeep">0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <div class="flex justify-between text-xs text-slate-500 mb-2 font-medium">
+              <span>Dia 1</span>
+              <span id="progressBarLabel" class="text-white">Hoje</span>
+              <span>Fim do Mês</span>
+            </div>
+            <div class="h-4 w-full bg-dark-950 rounded-full overflow-hidden border border-white/5 relative">
+              <div id="timeBar" class="h-full bg-gradient-to-r from-slate-600 to-slate-200 transition-all duration-1000 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="holidayHint" class="mt-2 text-[10px] text-slate-600 flex items-center gap-1">
+              <i class="fa-solid fa-info-circle"></i> <span>Calculando feriados...</span>
+            </p>
+          </div>
+        </div>
+
+        <div id="kpiCards" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          </div>
+      </section>
+
+      <section id="tab-dados" class="tab-content hidden space-y-6 fade-in pb-10">
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <div class="p-6 border-b border-white/5 flex justify-between items-center bg-dark-900/50">
+            <div>
+              <h2 class="text-lg font-display font-bold text-white">Entrada de Dados</h2>
+              <p class="text-xs text-slate-400">Atualize aqui o realizado do dia.</p>
+            </div>
+            <button data-action="save-all" class="bg-jeep hover:bg-yellow-400 text-black px-6 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(255,186,0,0.4)] flex items-center gap-2">
+              <i class="fa-solid fa-save"></i> Salvar Alterações
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-white/5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                <tr>
+                  <th class="px-6 py-4">KPI</th>
+                  <th class="px-6 py-4">Meta (R$/Qtd)</th>
+                  <th class="px-6 py-4">Realizado (Acumulado)</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody" class="divide-y divide-white/5 text-sm">
+                </tbody>
+            </table>
+          </div>
+          
+          <div class="p-4 bg-jeep/10 text-jeep text-xs font-medium text-center">
+            Dica: Os valores são salvos automaticamente no seu navegador.
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button data-action="export-json" class="p-4 rounded-2xl bg-dark-900 border border-white/10 hover:border-jeep/50 text-slate-300 hover:text-white transition-all text-xs font-bold uppercase flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download"></i> Backup dos Dados
+          </button>
+
+          <label class="p-4 rounded-2xl bg-dark-900 border border-white/10 hover:border-white/30 text-slate-300 hover:text-white transition-all text-xs font-bold uppercase flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-upload"></i> Restaurar Backup
+            <input type="file" id="importFile" class="hidden" accept=".json">
+          </label>
+
+          <label class="p-4 rounded-2xl bg-dark-900 border border-white/10 hover:border-white/30 text-slate-300 hover:text-white transition-all text-xs font-bold uppercase flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-file-arrow-up"></i> Upload Planilha (ODS/XLSX/CSV)
+            <input type="file" id="sheetFile" class="hidden" accept=".ods,.fods,.xlsx,.xls,.csv">
+          </label>
+        </div>
+      </section>
+
+      <section id="tab-config" class="tab-content hidden space-y-6 fade-in">
+        <div class="glass-card rounded-3xl p-6">
+          <h2 class="text-lg font-display font-bold text-white mb-6">Regras do Calendário</h2>
+          
+          <div class="space-y-4">
+            <label class="flex items-center justify-between p-4 rounded-xl bg-dark-950 border border-white/5 cursor-pointer">
+              <span class="text-sm font-bold text-white">Considerar Sábados como Úteis</span>
+              <input type="checkbox" id="toggleSat" class="w-5 h-5 accent-jeep rounded bg-dark-800 border-white/20">
+            </label>
+
+            <label class="flex items-center justify-between p-4 rounded-xl bg-dark-950 border border-white/5 cursor-pointer">
+              <span class="text-sm font-bold text-white">Pontos Facultativos (Carnaval/Corpus)</span>
+              <input type="checkbox" id="toggleOptional" class="w-5 h-5 accent-jeep rounded bg-dark-800 border-white/20">
+            </label>
+            
+            <div class="p-4 rounded-xl bg-dark-950 border border-white/5">
+              <p class="text-sm font-bold text-white mb-2">Feriados Locais</p>
+              <div class="flex gap-2 mb-3">
+                <input id="holidayInput" type="text" placeholder="AAAA-MM-DD" class="bg-dark-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-full">
+                <button data-action="add-holiday" class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-white"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <div id="holidayList" class="space-y-2 text-xs"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-20 md:bottom-6 right-6 z-[60] transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+    <div class="bg-white text-dark-950 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border-l-4 border-jeep">
+      <i class="fa-solid fa-check-circle text-jeep"></i>
+      <span id="toastMsg" class="text-sm font-bold">Salvo com sucesso!</span>
+    </div>
+  </div>
+
+  <script>
+    /* --- 1. ESTADO & DADOS INICIAIS --- */
+    const STORAGE_KEY = "dva_bi_v3_fixed";
+    
+    // Configuração dos KPIs
+    const KPIS = [
+      { id: "faturamento", label: "Faturamento Total", type: "money", icon: "fa-sack-dollar" },
+      { id: "passagens",   label: "Passagens Oficina", type: "count", icon: "fa-car" },
+      { id: "mao_obra",    label: "Mão de Obra",       type: "money", icon: "fa-wrench" }
+    ];
+
+    // Meses
+    const MONTHS = [
+      { id: "2026-01", label: "Janeiro 2026" }, { id: "2026-02", label: "Fevereiro 2026" },
+      { id: "2026-03", label: "Março 2026" },   { id: "2026-04", label: "Abril 2026" },
+      { id: "2026-05", label: "Maio 2026" },    { id: "2026-06", label: "Junho 2026" },
+      { id: "2026-07", label: "Julho 2026" },   { id: "2026-08", label: "Agosto 2026" },
+      { id: "2026-09", label: "Setembro 2026" },{ id: "2026-10", label: "Outubro 2026" },
+      { id: "2026-11", label: "Novembro 2026" },{ id: "2026-12", label: "Dezembro 2026" }
+    ];
+
+    // DADOS PRÉ-CARREGADOS (Baseado na sua planilha/conversas anteriores)
+    const DEFAULT_DATA = {
+      metas: {
+        faturamento: { "2026-01": 586857, "2026-02": 591643, "2026-03": 543528 },
+        passagens:   { "2026-01": 272,    "2026-02": 266,    "2026-03": 250 },
+        mao_obra:    { "2026-01": 199114, "2026-02": 199069, "2026-03": 169867 }
+      },
+      realizado: {
+        faturamento: { "2026-01": 586857, "2026-02": 225000 }, // Exemplo Fev
+        passagens:   { "2026-01": 272,    "2026-02": 105 },
+        mao_obra:    { "2026-01": 199114, "2026-02": 75400 }
+      }
+    };
+
+    let state = {
+      month: "2026-02", // Inicia em Fevereiro
+      config: { sat: false, optional: false, holidays: [] },
+      data: JSON.parse(JSON.stringify(DEFAULT_DATA)) // Clone
+    };
+
+    /* --- 2. SISTEMA DE DATAS & CÁLCULOS --- */
+    function getWorkdays(year, month) {
+      // Feriados Nacionais Fixos
+      const holidays = [`${year}-01-01`,`${year}-04-21`,`${year}-05-01`,`${year}-09-07`,`${year}-10-12`,`${year}-11-02`,`${year}-11-15`,`${year}-11-20`,`${year}-12-25`];
+      
+      // Páscoa/Carnaval/Corpus (Simplificado para 2026 para brevidade, idealmente usa algoritmo de Gauss)
+      if(year == 2026) {
+        holidays.push("2026-04-03"); // Paixão de Cristo
+        if(state.config.optional) {
+          holidays.push("2026-02-16", "2026-02-17"); // Carnaval
+          holidays.push("2026-06-04"); // Corpus
+        }
+      }
+      // Feriados locais
+      state.config.holidays.forEach(h => holidays.push(h));
+
+      const lastDay = new Date(year, month, 0).getDate();
+      const now = new Date();
+      // Data de corte: Se mês passado, último dia. Se mês atual, hoje. Se futuro, dia 1.
+      let cutoff = new Date(year, month - 1, 1);
+      const isCurrentMonth = (now.getFullYear() == year && now.getMonth() + 1 == month);
+      
+      if (isCurrentMonth) cutoff = now;
+      else if (now > new Date(year, month - 1, lastDay)) cutoff = new Date(year, month - 1, lastDay);
+      
+      let total = 0, elapsed = 0;
+      
+      for(let d=1; d<=lastDay; d++) {
+        const date = new Date(year, month-1, d);
+        const iso = date.toISOString().split('T')[0];
+        const dayOfWeek = date.getDay(); // 0=Dom, 6=Sab
+        
+        let isWork = true;
+        if(dayOfWeek === 0) isWork = false; // Domingo
+        if(!state.config.sat && dayOfWeek === 6) isWork = false; // Sábado
+        if(holidays.includes(iso)) isWork = false;
+
+        if(isWork) {
+          total++;
+          if(date <= cutoff) elapsed++;
+        }
+      }
+      return { total, elapsed, remaining: total - elapsed, progress: total > 0 ? elapsed/total : 0, cutoff };
+    }
+
+    function calculateKPI(kpi, monthKey, wd) {
+      const meta = state.data.metas[kpi][monthKey] || 0;
+      const real = state.data.realizado[kpi][monthKey] || 0;
+      
+      if(meta === 0) return { status: 'nodata', pct: 0, proj: 0, gap: 0, needed: 0 };
+
+      const pct = real / meta;
+      const expected = meta * wd.progress;
+      const proj = wd.elapsed > 0 ? (real / wd.elapsed) * wd.total : 0;
+      const needed = wd.remaining > 0 ? (meta - real) / wd.remaining : 0;
+      
+      let status = 'neutral';
+      if(real >= expected) status = 'good';
+      else if(real >= expected * 0.95) status = 'warning'; // 5% tolerância
+      else status = 'bad';
+
+      if(pct >= 1) status = 'won'; // Meta batida
+
+      return { meta, real, pct, proj, needed, status, expected };
+    }
+
+    /* --- 3. UI RENDER --- */
+    const formatMoney = v => v.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    const formatNum = v => Math.round(v).toLocaleString('pt-BR');
+    const formatPct = v => (v*100).toFixed(1) + '%';
+
+    function render() {
+      // 1. Setup Data
+      const [yStr, mStr] = state.month.split('-');
+      const wd = getWorkdays(parseInt(yStr), parseInt(mStr));
+      
+      // 2. Hero Section
+      document.getElementById('timePctBig').textContent = formatPct(wd.progress);
+      document.getElementById('workdaysBig').textContent = `${wd.elapsed}/${wd.total}`;
+      document.getElementById('remainingBig').textContent = wd.remaining;
+      document.getElementById('timeBar').style.width = `${wd.progress * 100}%`;
+      document.getElementById('progressBarLabel').textContent = wd.progress >= 1 ? "Encerrado" : "Hoje";
+      
+      // Badge de Ritmo Global (Média simples dos status)
+      let goodCounts = 0;
+      let score = 0;
+      KPIS.forEach(k => {
+        const res = calculateKPI(k.id, state.month, wd);
+        if(res.status === 'won' || res.status === 'good') score++;
+      });
+      const paceEl = document.getElementById('paceBadge');
+      if(score === 3) { paceEl.textContent = "EXCELENTE"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500 text-black"; }
+      else if(score >= 1) { paceEl.textContent = "MISTO"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-jeep text-black"; }
+      else { paceEl.textContent = "CRÍTICO"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-ram text-white"; }
+
+      document.getElementById('holidayHint').innerHTML = `<i class="fa-solid fa-calendar-check text-jeep"></i> ${wd.total} Dias úteis considerados.`;
+
+      // 3. KPI Cards
+      const cardsContainer = document.getElementById('kpiCards');
+      cardsContainer.innerHTML = '';
+      
+      KPIS.forEach(def => {
+        const data = calculateKPI(def.id, state.month, wd);
+        const isMoney = def.type === 'money';
+        const valFmt = isMoney ? formatMoney : formatNum;
+        
+        let colorClass = "border-white/5";
+        let textClass = "text-slate-400";
+        let statusIcon = "";
+        let barColor = "bg-slate-600";
+        
+        if(data.status === 'won') { colorClass = "border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]"; textClass = "text-emerald-400"; barColor="bg-emerald-500"; statusIcon="🏆"; }
+        else if(data.status === 'good') { colorClass = "border-emerald-500/50"; textClass = "text-emerald-500"; barColor="bg-emerald-500"; statusIcon="OK"; }
+        else if(data.status === 'warning') { colorClass = "border-jeep/50"; textClass = "text-jeep"; barColor="bg-jeep"; statusIcon="⚠️"; }
+        else if(data.status === 'bad') { colorClass = "border-ram/50"; textClass = "text-red-500"; barColor="bg-red-500"; statusIcon="🔻"; }
+
+        const card = document.createElement('div');
+        card.className = `glass-card rounded-2xl p-5 border ${colorClass} relative overflow-hidden group`;
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-dark-900 flex items-center justify-center text-xl text-slate-400 group-hover:text-white transition-colors">
+                <i class="fa-solid ${def.icon}"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">${def.label}</h3>
+                <div class="text-[10px] text-slate-600">Meta: ${valFmt(data.meta)}</div>
+              </div>
+            </div>
+            <div class="font-black text-lg ${textClass}">${statusIcon}</div>
+          </div>
+          
+          <div class="flex items-baseline gap-1 mb-2">
+            <span class="text-2xl font-display font-black text-white">${valFmt(data.real)}</span>
+            <span class="text-xs text-slate-500 font-bold">(${formatPct(data.pct)})</span>
+          </div>
+
+          <div class="h-1.5 w-full bg-dark-950 rounded-full mb-4 relative overflow-hidden">
+            <div class="absolute h-full ${barColor}" style="width: ${Math.min(100, data.pct*100)}%"></div>
+            <div class="absolute h-full w-0.5 bg-white shadow-[0_0_5px_white]" style="left: ${wd.progress*100}%" title="Ritmo Ideal"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs border-t border-white/5 pt-3">
+            <div>
+              <span class="block text-[10px] text-slate-600 uppercase">Projeção</span>
+              <span class="font-bold text-slate-300">${valFmt(data.proj)}</span>
+            </div>
+            <div class="text-right">
+              <span class="block text-[10px] text-slate-600 uppercase">Necessário/Dia</span>
+              <span class="font-bold ${data.needed > 0 ? 'text-jeep' : 'text-slate-500'}">${valFmt(data.needed)}</span>
+            </div>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      });
+
+      // 4. Data Table (Inputs)
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = '';
+      KPIS.forEach(def => {
+        const metaVal = state.data.metas[def.id][state.month] || 0;
+        const realVal = state.data.realizado[def.id][state.month] || 0;
+        
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition-colors";
+        tr.innerHTML = `
+          <td class="px-6 py-3 font-bold text-slate-300 flex items-center gap-2">
+            <i class="fa-solid ${def.icon} text-slate-600"></i> ${def.label}
+          </td>
+          <td class="px-6 py-3">
+             <input type="number" step="0.01" class="bg-dark-950 border border-white/10 rounded px-2 py-1 text-white w-32 focus:border-jeep outline-none" 
+              value="${metaVal}" onchange="updateData('metas', '${def.id}', this.value)">
+          </td>
+          <td class="px-6 py-3">
+             <input type="number" step="0.01" class="bg-dark-950 border border-white/10 rounded px-2 py-1 text-white w-32 focus:border-jeep outline-none font-bold" 
+              value="${realVal}" onchange="updateData('realizado', '${def.id}', this.value)">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 5. Configs
+      document.getElementById('toggleSat').checked = state.config.sat;
+      document.getElementById('toggleOptional').checked = state.config.optional;
+      renderHolidays();
+    }
+
+    function renderHolidays() {
+      const list = document.getElementById('holidayList');
+      list.innerHTML = '';
+      state.config.holidays.forEach((h, idx) => {
+        const div = document.createElement('div');
+        div.className = "flex justify-between items-center bg-dark-900 px-3 py-2 rounded border border-white/5";
+        div.innerHTML = `<span>${h}</span> <button onclick="removeHoliday(${idx})" class="text-ram"><i class="fa-solid fa-trash"></i></button>`;
+        list.appendChild(div);
+      });
+    }
+
+    /* --- 4. AÇÕES & EVENTOS --- */
+    
+    // Atualiza dados na memória (não salva no localstorage ainda, só ao clicar salvar)
+    window.updateData = (type, kpi, val) => {
+      state.data[type][kpi][state.month] = parseFloat(val) || 0;
+    };
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showToast();
+      render();
+      updateTimeDisplay();
+    }
+
+    function loadFromStorage() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if(stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // Merge para garantir estrutura
+          state = { ...state, ...parsed }; 
+        } catch(e) { console.error("Erro ao carregar dados", e); }
+      }
+      // Populate month select
+      const sel = document.getElementById('monthSelect');
+      sel.innerHTML = '';
+      MONTHS.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.label;
+        if(m.id === state.month) opt.selected = true;
+        opt.className = "text-black";
+        sel.appendChild(opt);
+      });
+      render();
+    }
+
+    function updateTimeDisplay() {
+      const now = new Date();
+      document.getElementById('lastUpdateText').textContent = "Atualizado: " + now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    }
+
+    function showToast(msg = "Dados Salvos!") {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
+    }
+
+    // Gerenciador de Abas
+    document.addEventListener('click', (e) => {
+      // 1. Abas
+      const tabBtn = e.target.closest('[data-action="tab"]');
+      if(tabBtn) {
+        // UI
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'bg-white/5', 'text-white'));
+        document.querySelectorAll('.nav-btn i').forEach(i => i.classList.remove('text-jeep'));
+        
+        tabBtn.classList.add('active', 'bg-white/5', 'text-white');
+        tabBtn.querySelector('i').classList.add('text-jeep');
+
+        // Content
+        const targetId = tabBtn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`tab-${targetId}`).classList.remove('hidden');
+      }
+
+      // 2. Salvar Geral
+      if(e.target.closest('[data-action="save-all"]')) {
+        saveToStorage();
+      }
+
+      // 3. Adicionar Feriado
+      if(e.target.closest('[data-action="add-holiday"]')) {
+        const inp = document.getElementById('holidayInput');
+        if(inp.value) {
+          state.config.holidays.push(inp.value);
+          inp.value = '';
+          saveToStorage();
+        }
+      }
+
+      // 4. Export JSON
+      if(e.target.closest('[data-action="export-json"]')) {
+        const blob = new Blob([JSON.stringify(state, null, 2)], {type : 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_dva_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+      }
+    });
+
+    // Import JSON
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          state = JSON.parse(ev.target.result);
+          saveToStorage();
+          showToast("Backup Restaurado!");
+        } catch(err) { alert("Arquivo inválido"); }
+      };
+      reader.readAsText(file);
+    });
+
+    // Import Planilha (ODS/XLSX/CSV) — suporta:
+    // (A) Formato "blocos" (igual METAS 2026.ods): KPI na 1ª coluna, meses no cabeçalho da linha, meta na linha abaixo e "ATINGIDO..." na próxima
+    // (B) Formato "tabela": colunas KPI | Meta | Realizado | (opcional) Mês
+    document.getElementById('sheetFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+      try {
+        let wb;
+        if(ext === 'csv') {
+          const text = await file.text();
+          wb = XLSX.read(text, { type: 'string' });
+        } else {
+          const buf = await file.arrayBuffer();
+          wb = XLSX.read(buf, { type: 'array' });
+        }
+
+        const sheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+
+        const norm = (s) => String(s || "")
+          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+          .toLowerCase().trim();
+
+        const toNumber = (v) => {
+          if(v === null || v === undefined) return NaN;
+          if(typeof v === 'number') return v;
+          let s = String(v).trim();
+          if(!s) return NaN;
+          s = s.replace(/\s/g,'').replace(/[R$\u00A0]/g,'');
+          // pt-BR: 1.234,56 -> 1234.56
+          if(/,\d{1,}$/.test(s)) s = s.replace(/\./g,'').replace(/,/g,'.');
+          const n = Number(s);
+          return Number.isFinite(n) ? n : NaN;
+        };
+
+        const kpiIdFromText = (v) => {
+          const s = norm(v);
+          if(s.includes('fatur')) return 'faturamento';
+          if(s.includes('pass')) return 'passagens';
+          if(s.includes('mao') || s.includes('mão') || s.includes('oficina')) return 'mao_obra';
+          return null;
+        };
+
+        const MONTH_MAP = {
+          'janeiro':'01','jan':'01',
+          'fevereiro':'02','fev':'02',
+          'marco':'03','mar':'03', 'março':'03',
+          'abril':'04','abr':'04',
+          'maio':'05','mai':'05',
+          'junho':'06','jun':'06',
+          'julho':'07','jul':'07',
+          'agosto':'08','ago':'08',
+          'setembro':'09','set':'09','sep':'09',
+          'outubro':'10','out':'10','oct':'10',
+          'novembro':'11','nov':'11',
+          'dezembro':'12','dez':'12','dec':'12'
+        };
+
+        const detectYearFromSheet = (aoa) => {
+          for(const row of aoa){
+            for(const cell of row){
+              if(typeof cell !== 'string') continue;
+              const m = cell.match(/(20\d{2})/);
+              if(m) return m[1];
+            }
+          }
+          return null;
+        };
+
+        const monthKeyFromHeader = (year, v) => {
+          const s = norm(v);
+          if(!s) return null;
+          // suporta "2026-02" / "2026/2"
+          const m = s.match(/(20\d{2})[-\/](\d{1,2})/);
+          if(m) return `${m[1]}-${String(m[2]).padStart(2,'0')}`;
+          // suporta "Fevereiro 2026" (labels do app)
+          const byLabel = MONTHS.find(x => norm(x.label) === s);
+          if(byLabel) return byLabel.id;
+          // suporta mês por extenso/abreviação
+          const mm = MONTH_MAP[s];
+          if(mm) return `${year}-${mm}`;
+          return null;
+        };
+
+        // -----------------------
+        // 1) Tenta "formato blocos" (igual METAS 2026.ods)
+        // -----------------------
+        const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: true });
+        const year = detectYearFromSheet(aoa) || String(state.month).slice(0,4) || "2026";
+
+        let changed = 0;
+        let blocksFound = 0;
+
+        for(let r=0; r<aoa.length; r++){
+          const row = aoa[r] || [];
+          const id = kpiIdFromText(row[0]);
+          if(!id) continue;
+
+          // Conta quantos "meses" existem na linha (colunas 1+)
+          let monthCols = [];
+          for(let c=1; c<row.length; c++){
+            const mk = monthKeyFromHeader(year, row[c]);
+            if(mk) monthCols.push({ c, mk });
+          }
+
+          // Para evitar falsos positivos: exige pelo menos 4 meses identificados na mesma linha
+          if(monthCols.length < 4) continue;
+
+          blocksFound++;
+
+          // Garante estrutura
+          state.data.metas[id] = state.data.metas[id] || {};
+          state.data.realizado[id] = state.data.realizado[id] || {};
+
+          const metaRow = aoa[r+1] || [];
+          const realRow = aoa[r+2] || [];
+          const hasAtingidoRow = norm(realRow[0]).includes('atingido');
+
+          for(const {c, mk} of monthCols){
+            const mv = toNumber(metaRow[c]);
+            if(Number.isFinite(mv)){
+              state.data.metas[id][mk] = mv;
+              changed++;
+            }
+            if(hasAtingidoRow){
+              const rv = toNumber(realRow[c]);
+              if(Number.isFinite(rv)){
+                state.data.realizado[id][mk] = rv;
+                changed++;
+              }
+            }
+          }
+
+          // pula para frente para não reprocessar linhas internas do mesmo bloco
+          r = r + 2;
+        }
+
+        // -----------------------
+        // 2) Se não achou blocos, tenta "formato tabela" (KPI/Meta/Realizado/Mês)
+        // -----------------------
+        if(blocksFound === 0){
+          const rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: true });
+          if(!rows.length) { alert("Planilha vazia."); return; }
+
+          const pickCol = (rowKeys, needles) => {
+            for(const k of rowKeys) {
+              const nk = norm(k);
+              if(needles.some(n => nk.includes(n))) return k;
+            }
+            return null;
+          };
+
+          const parseMonthCell = (v) => monthKeyFromHeader(year, v);
+
+          const keys = Object.keys(rows[0] || {});
+          const colKPI  = pickCol(keys, ['kpi','indic','indicador','nome']);
+          const colMeta = pickCol(keys, ['meta','objetiv','target']);
+          const colReal = pickCol(keys, ['real','ating','acumul','feito','produz']);
+          const colMes  = pickCol(keys, ['mes','month','compet']);
+
+          if(!colKPI || (!colMeta && !colReal)) {
+            alert(
+              "Não consegui identificar as colunas.\n\n" +
+              "Aceitos:\n" +
+              "• Formato BLOCO (igual METAS 2026.ods): KPI + meses na linha, meta abaixo e (opcional) 'ATINGIDO...' abaixo.\n" +
+              "• Formato TABELA: KPI | Meta | Realizado | (opcional) Mês\n\n" +
+              "Se quiser, me mande um print da 1ª aba que eu adapto 100%."
+            );
+            return;
+          }
+
+          rows.forEach(r => {
+            const id = kpiIdFromText(r[colKPI]);
+            if(!id) return;
+
+            state.data.metas[id] = state.data.metas[id] || {};
+            state.data.realizado[id] = state.data.realizado[id] || {};
+
+            const monthKey = colMes ? (parseMonthCell(r[colMes]) || state.month) : state.month;
+
+            if(colMeta) {
+              const mv = toNumber(r[colMeta]);
+              if(Number.isFinite(mv)) {
+                state.data.metas[id][monthKey] = mv;
+                changed++;
+              }
+            }
+            if(colReal) {
+              const rv = toNumber(r[colReal]);
+              if(Number.isFinite(rv)) {
+                state.data.realizado[id][monthKey] = rv;
+                changed++;
+              }
+            }
+          });
+        }
+
+        saveToStorage();
+        render();
+        showToast(changed ? "Planilha importada!" : "Planilha lida, mas nenhum campo foi aplicado.");
+      } catch(err) {
+        console.error(err);
+        alert("Falha ao ler a planilha.\n\nDicas:\n• Confirme que é .ods/.xlsx/.xls/.csv\n• Para METAS 2026.ods, mantenha o layout por blocos\n• Se a 1ª aba tiver vários quadros, deixe o quadro principal (Faturamento/Passagens/Mão de Obra) no topo");
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+
+    // Remover Feriado
+    window.removeHoliday = (idx) => {
+      state.config.holidays.splice(idx, 1);
+      saveToStorage();
+    };
+
+    // Mudar Mês
+    document.getElementById('monthSelect').addEventListener('change', (e) => {
+      state.month = e.target.value;
+      document.getElementById('mobileMonthDisplay').textContent = e.target.options[e.target.selectedIndex].text;
+      render();
+    });
+
+    // Config Toggles
+    document.getElementById('toggleSat').addEventListener('change', e => { state.config.sat = e.target.checked; saveToStorage(); });
+    document.getElementById('toggleOptional').addEventListener('change', e => { state.config.optional = e.target.checked; saveToStorage(); });
+
+    // INIT
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromStorage();
+      // Set Active Tab Initial
+      document.querySelector('[data-tab="dashboard"]').click();
+      updateTimeDisplay();
+    });
+
+  </script>
+</body>
+</html>
