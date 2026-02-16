@@ -98,6 +98,12 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
         <i class="fa-solid fa-table-list text-lg md:text-sm group-[.active]:text-jeep"></i>
         <span class="text-[10px] md:text-sm font-semibold md:mt-0 group-[.active]:text-white">Dados & Metas</span>
       </button>
+      <button class="nav-btn flex flex-col md:flex-row items-center md:gap-3 p-3 md:px-4 md:py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all w-full group"
+              data-action="tab" data-tab="campanhas">
+        <i class="fa-solid fa-trophy text-lg md:text-sm group-[.active]:text-jeep"></i>
+        <span class="text-[10px] md:text-sm font-semibold md:mt-0 group-[.active]:text-white">Campanhas</span>
+      </button>
+
 
       <button class="nav-btn flex flex-col md:flex-row items-center md:gap-3 p-3 md:px-4 md:py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all w-full group"
               data-action="tab" data-tab="config">
@@ -255,6 +261,136 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
           </div>
         </div>
       </section>
+      <section id="tab-campanhas" class="tab-content hidden space-y-6 fade-in pb-10">
+
+        <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 bg-jeep/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute bottom-0 left-0 -ml-28 -mb-28 w-[28rem] h-[28rem] bg-ram/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 relative z-10">
+            <div>
+              <h2 class="text-xl md:text-2xl font-display font-black text-white tracking-tight">
+                Gestão de Campanhas <span class="text-transparent bg-clip-text bg-gradient-to-r from-jeep to-ram">Q1 2026</span>
+              </h2>
+              <p class="text-sm text-slate-400 mt-1">
+                Consulta rápida por setor • Período: 01/01/2026 a 31/03/2026
+              </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="bg-dark-900 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3">
+                <div class="text-[10px] uppercase font-black tracking-widest text-slate-500">Modo</div>
+                <div class="flex items-center gap-2">
+                  <button id="campBtnCompact" class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-white/5 hover:bg-white/10 transition border border-white/10">Compacto</button>
+                  <button id="campBtnDetalhado" class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-white/5 hover:bg-white/10 transition border border-white/10">Detalhado</button>
+                </div>
+              </div>
+
+              <div class="bg-dark-900 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-slate-500 text-sm"></i>
+                <input id="campSearchInput" class="bg-transparent outline-none text-sm text-white placeholder:text-slate-600 w-60" placeholder="Buscar: 89, base 80, Ram, BEE..." />
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button id="campBtnCopyResumo" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2">
+                  <i class="fa-regular fa-copy"></i> Copiar
+                </button>
+                <button id="campBtnPrint" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2">
+                  <i class="fa-solid fa-print"></i> Imprimir
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile sector pills -->
+          <div class="mt-5 md:hidden">
+            <div class="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-2">Setores</div>
+            <div id="campNavMobile" class="flex gap-2 overflow-x-auto pb-2 scrollbar"></div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <!-- Sector nav (desktop) -->
+            <aside class="hidden md:block xl:col-span-4">
+              <div class="glass-panel rounded-3xl p-4 border border-white/5">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <div class="text-[10px] uppercase font-black tracking-widest text-slate-500">Navegação</div>
+                    <div class="text-sm font-display font-bold text-white">Setores</div>
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-500" id="campActiveIdLabel">—</div>
+                </div>
+                <div class="space-y-2" id="campNav"></div>
+
+                <div class="mt-4 p-3 rounded-2xl bg-dark-950 border border-white/5">
+                  <div class="text-xs font-bold text-slate-300 mb-2">Notas importantes</div>
+                  <ul class="text-xs text-slate-500 space-y-1.5">
+                    <li>• Incentivo pago via folha/cartão/BEE, sem incorporação salarial.</li>
+                    <li>• Metas podem ser revisadas se a montadora alterar objetivos de NPS.</li>
+                  </ul>
+                </div>
+              </div>
+            </aside>
+
+            <!-- Main details -->
+            <div class="xl:col-span-8 space-y-5">
+              <div class="glass-panel rounded-3xl p-5 border border-white/5">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <h3 id="campSectorTitle" class="text-lg md:text-xl font-display font-black text-white tracking-tight">—</h3>
+                      <div class="flex flex-wrap gap-2" id="campBadges"></div>
+                    </div>
+                    <p id="campSectorSubtitle" class="text-sm text-slate-400 mt-1">—</p>
+                  </div>
+                </div>
+
+                <div id="campKpiGrid" class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+                <div class="xl:col-span-7 space-y-5">
+                  <div class="glass-panel rounded-3xl p-5 border border-white/5">
+                    <div class="flex items-center justify-between">
+                      <h4 class="text-sm font-display font-bold text-white">Regras de meta e elegibilidade</h4>
+                      <span id="campRulesCount" class="text-xs font-mono text-slate-500">—</span>
+                    </div>
+                    <div id="campRulesList" class="mt-4 space-y-2"></div>
+                  </div>
+
+                  <div class="glass-panel rounded-3xl p-5 border border-white/5">
+                    <div class="flex items-center justify-between">
+                      <h4 class="text-sm font-display font-bold text-white">Premiação</h4>
+                      <span id="campPremiosHint" class="text-xs font-mono text-slate-500">—</span>
+                    </div>
+                    <div id="campPremiosGrid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                  </div>
+                </div>
+
+                <div class="xl:col-span-5 space-y-5">
+                  <div class="glass-panel rounded-3xl p-5 border border-white/5">
+                    <h4 class="text-sm font-display font-bold text-white">Calendário & pagamentos</h4>
+                    <div id="campTimeline" class="mt-4 space-y-3"></div>
+                  </div>
+
+                  <div id="campExtrasBox" class="glass-panel rounded-3xl p-5 border border-white/5">
+                    <h4 class="text-sm font-display font-bold text-white">Observações operacionais</h4>
+                    <ul id="campExtrasList" class="mt-4 text-sm text-slate-300 space-y-2"></ul>
+                    <div class="mt-3 text-[10px] text-slate-600">
+                      * Organização prática do que mais “derruba” resultado; não substitui a regra oficial.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-[10px] text-slate-600 font-mono flex justify-between">
+                <span id="campFooterLeft">—</span>
+                <span>campanhas.v1 • offline</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
     </div>
   </main>
@@ -356,11 +492,12 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
       const meta = state.data.metas[kpi][monthKey] || 0;
       const real = state.data.realizado[kpi][monthKey] || 0;
       
-      if(meta === 0) return { status: 'nodata', pct: 0, proj: 0, gap: 0, needed: 0 };
+      if(meta === 0) return { status: 'nodata', meta: 0, real: 0, pct: 0, proj: 0, needed: 0, expected: 0, gap: 0 };
 
       const pct = real / meta;
       const expected = meta * wd.progress;
       const proj = wd.elapsed > 0 ? (real / wd.elapsed) * wd.total : 0;
+      const gap = Math.max(meta - proj, 0); // Gap = (meta do mês) − (projeção do mês), nunca negativo
       const needed = wd.remaining > 0 ? (meta - real) / wd.remaining : 0;
       
       let status = 'neutral';
@@ -370,7 +507,7 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
 
       if(pct >= 1) status = 'won'; // Meta batida
 
-      return { meta, real, pct, proj, needed, status, expected };
+      return { meta, real, pct, proj, needed, status, expected, gap };
     }
 
     /* --- 3. UI RENDER --- */
@@ -444,9 +581,20 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
             <span class="text-xs text-slate-500 font-bold">(${formatPct(data.pct)})</span>
           </div>
 
-          <div class="h-1.5 w-full bg-dark-950 rounded-full mb-4 relative overflow-hidden">
+          <div class="h-1.5 w-full bg-dark-950 rounded-full mb-3 relative overflow-hidden">
             <div class="absolute h-full ${barColor}" style="width: ${Math.min(100, data.pct*100)}%"></div>
-            <div class="absolute h-full w-0.5 bg-white shadow-[0_0_5px_white]" style="left: ${wd.progress*100}%" title="Ritmo Ideal"></div>
+            <div class="absolute h-full w-0.5 bg-white shadow-[0_0_5px_white]" style="left: ${wd.progress*100}%" title="Ritmo Ideal (meta proporcional aos dias úteis)"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs mb-3">
+            <div>
+              <span class="block text-[10px] text-slate-600 uppercase">Ritmo ideal hoje</span>
+              <span class="font-bold text-slate-300">${valFmt(data.expected)}</span>
+            </div>
+            <div class="text-right">
+              <span class="block text-[10px] text-slate-600 uppercase">Gap (meta−proj)</span>
+              <span class="font-bold ${data.gap > 0 ? 'text-ram' : 'text-emerald-400'}" title="Gap = (meta do mês) − (projeção do mês). Se a projeção estiver acima da meta, o gap fica 0.">${valFmt(data.gap)}</span>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2 text-xs border-t border-white/5 pt-3">
@@ -850,5 +998,426 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
     });
 
   </script>
+
+  <script>
+    // ------------------------------
+    // Campanhas Q1 2026 (namespace)
+    // ------------------------------
+    (() => {
+      const CAMP = {
+        q: { start: "01/01/2026", end: "31/03/2026" },
+        sectors: [
+          {
+            id: "assistentes",
+            name: "Assistentes de Pós-Venda",
+            subtitle: "Campanha NPS Jeep — Q1 2026 (fechamento trimestral)",
+            badges: ["Trimestral", "NPS Jeep", "Coletivo (AOP)"],
+            kpis: [
+              { label: "Meta NPS Jeep", value: "≥ 89%", note: "Faixa 1 — fechamento do Q1" },
+              { label: "Prêmio", value: "R$ 450", note: "Trimestral" },
+              { label: "Pagamento", value: "Folha", note: "04/2026" }
+            ],
+            rules: [
+              { t: "Gatilho", d: "Atingir ou superar NPS Jeep ≥ 89% no fechamento do Q1 (JAN/FEV/MAR)." },
+              { t: "Corte (AOP)", d: "Se a AOP/área operacional da filial não fechar ≥ 89%, não há pagamento." },
+              { t: "Corte (base)", d: "Qualidade da base deve ser ≥ 80%. Abaixo disso, não paga." },
+              { t: "Regra coletiva", d: "Se uma filial bater, mas a média das demais filiais da mesma AOP não bater, nenhuma recebe." }
+            ],
+            premios: [
+              { title: "Trimestral (Q1)", value: "R$ 450,00", detail: "Assistentes — se condições atendidas" }
+            ],
+            timeline: [
+              { when: "Fechamento Q1", what: "Apuração NPS Jeep (JAN+FEV+MAR)", how: "Montadora / consolidação do quarter" },
+              { when: "04/2026", what: "Pagamento", how: "Folha de pagamento" }
+            ],
+            extras: [
+              "Garantir cadastros corretos (email/telefone) para proteger qualidade da base.",
+              "Monitorar detratores em tempo real e sinalizar casos críticos ao gerente.",
+              "Padronizar confirmação de dados no check-in e na entrega."
+            ]
+          },
+
+          {
+            id: "consultores",
+            name: "Consultores de Pós-Venda",
+            subtitle: "Premiação mensal por marca + bônus de fechamento do Q1 (unidade) — Jeep & Ram",
+            badges: ["Mensal", "Trimestral", "Jeep & Ram", "BEE / Cartão"],
+            kpis: [
+              { label: "Meta Jeep", value: "≥ 89%", note: "Faixa 1 (mensal e Q1)" },
+              { label: "Meta Ram", value: "≥ 86%", note: "Faixa 1 (mensal e Q1)" },
+              { label: "Mín. de pesquisas", value: "Jeep 20 • Ram 4", note: "por consultor / mês" }
+            ],
+            rules: [
+              { t: "Mensal (Jeep)", d: "NPS Jeep individual ≥ 89% + mínimo 20 pesquisas respondidas no mês." },
+              { t: "Mensal (Ram)", d: "NPS Ram individual ≥ 86% + mínimo 4 pesquisas respondidas no mês." },
+              { t: "Bônus Q1 (unidade)", d: "Unidade bate a meta trimestral: Jeep ≥ 89% e/ou Ram ≥ 86% (por marca)." },
+              { t: "Corte (base)", d: "Qualidade da base deve ser ≥ 80% para liberar bônus trimestral." },
+              { t: "Elegibilidade", d: "Contratados durante o quarter não recebem valores trimestrais." }
+            ],
+            premios: [
+              { title: "Mensal — Jeep", value: "R$ 350,00", detail: "Pagto via BEE até dia 10 do mês seguinte" },
+              { title: "Mensal — Ram", value: "R$ 300,00", detail: "Pagto via BEE até dia 10 do mês seguinte" },
+              { title: "Bônus Q1 (unidade) — Jeep", value: "R$ 1.000,00", detail: "Pagamento em 10/05/2026" },
+              { title: "Bônus Q1 (unidade) — Ram", value: "R$ 800,00", detail: "Pagamento em 10/05/2026" }
+            ],
+            timeline: [
+              { when: "10/02/2026", what: "Pagamento JAN", how: "Cartão BEE" },
+              { when: "10/03/2026", what: "Pagamento FEV", how: "Cartão BEE" },
+              { when: "10/04/2026", what: "Pagamento MAR", how: "Cartão BEE" },
+              { when: "10/05/2026", what: "Bônus fechamento Q1", how: "Por marca (Jeep/Ram) — unidade" }
+            ],
+            extras: [
+              "Priorizar follow-up de clientes neutros/detratores ainda dentro da janela da pesquisa.",
+              "Atentar ao volume mínimo de pesquisas: sem volume, não há premiação mesmo com NPS alto.",
+              "Evitar erros de cadastro (email/telefone) — impacto direto na qualidade da base."
+            ]
+          },
+
+          {
+            id: "gerentes",
+            name: "Gerentes de Pós-Venda",
+            subtitle: "Campanha “Acelerando Resultados” — 3 indicadores (passagens, faturamento, NPS)",
+            badges: ["Mensal", "Trimestral", "Operação & Qualidade", "Cartão premiação"],
+            kpis: [
+              { label: "Passagens (OS)", value: "+20% YoY", note: "mín. 200 veículos (exceto Brusque)" },
+              { label: "Faturamento PV", value: "+20% YoY", note: "deduzindo CITs internos" },
+              { label: "NPS", value: "Jeep ≥ 89% • Ram ≥ 86%", note: "mensal + Q1 (AOP)" }
+            ],
+            rules: [
+              { t: "Indicador 1", d: "Passagens: >20% vs mesmo mês do ano anterior; mínimo 200 veículos (exceção: Brusque); filtrando CITs." },
+              { t: "Indicador 2", d: "Faturamento total do pós-venda: +20% vs ano anterior (deduzindo CITs internos)." },
+              { t: "Indicador 3 (mensal)", d: "NPS mensal: pagamento se bater NPS Jeep e Ram nas metas da montadora." },
+              { t: "Indicador 3 (trimestral)", d: "NPS trimestral (AOP): se fechar Jeep 89% e Ram 86% (ambas acima do preconizado)." },
+              { t: "Bônus adicional", d: "Se entregar os 3 indicadores no mês, paga “Superação Máxima” e encerra as demais campanhas vigentes no mês." }
+            ],
+            premios: [
+              { title: "Passagens (100%)", value: "R$ 600,00", detail: "Mensal" },
+              { title: "Faturamento (100%)", value: "R$ 400,00", detail: "Mensal" },
+              { title: "NPS (mensal)", value: "R$ 1.000,00", detail: "Mensal — Jeep + Ram" },
+              { title: "NPS (Q1 / AOP)", value: "R$ 2.500,00", detail: "Trimestral — pagamento em 10/06/2026" },
+              { title: "Superação Máxima", value: "R$ 2.000,00", detail: "Mensal — se os 3 indicadores baterem" }
+            ],
+            timeline: [
+              { when: "10/02/2026", what: "Mensal (JAN)", how: "Cartão premiação" },
+              { when: "10/03/2026", what: "Mensal (FEV)", how: "Cartão premiação" },
+              { when: "10/04/2026", what: "Mensal (MAR)", how: "Cartão premiação" },
+              { when: "10/06/2026", what: "NPS Q1 (AOP)", how: "Cartão premiação" }
+            ],
+            extras: [
+              "Tratar CITs conforme regra (filtragem/dedução em passagens e faturamento).",
+              "Manter governança de NPS (casos críticos + plano de ação).",
+              "Foco simultâneo: volume (passagens) + receita + qualidade (NPS)."
+            ]
+          },
+
+          {
+            id: "oficina",
+            name: "Chefia de Oficina & Produtivos — Balneário",
+            subtitle: "Meta de faturamento de mão de obra por mês (exclui serviços internos e funilaria)",
+            badges: ["Mensal", "Mão de obra", "Folha", "Balneário"],
+            kpis: [
+              { label: "Meta Jan/2026", value: "R$ 199.114", note: "Mão de obra" },
+              { label: "Meta Fev/2026", value: "R$ 199.069", note: "Mão de obra" },
+              { label: "Meta Mar/2026", value: "R$ 169.867", note: "Mão de obra" }
+            ],
+            rules: [
+              { t: "Gatilho", d: "Premiação somente se atingir 100% da meta mensal de mão de obra." },
+              { t: "Escopo", d: "Não entra: mão de obra de serviços internos e funilaria." },
+              { t: "Produtivos", d: "Produtivo recebe se trabalhou e apontou serviços no mês." }
+            ],
+            premios: [
+              { title: "Jan/Fev — Chefe", value: "R$ 800,00", detail: "Se 100% da meta mensal" },
+              { title: "Jan/Fev — Cada produtivo", value: "R$ 400,00", detail: "Se trabalhou e apontou" },
+              { title: "Mar — Chefe", value: "R$ 600,00", detail: "Se 100% da meta mensal" },
+              { title: "Mar — Cada produtivo", value: "R$ 300,00", detail: "Se trabalhou e apontou" }
+            ],
+            timeline: [
+              { when: "02/2026", what: "Pagamento Jan", how: "Folha (mês seguinte)" },
+              { when: "03/2026", what: "Pagamento Fev", how: "Folha (mês seguinte)" },
+              { when: "04/2026", what: "Pagamento Mar", how: "Folha (mês seguinte)" }
+            ],
+            extras: [
+              "Garantir apontamento consistente: sem apontamento, pode perder elegibilidade.",
+              "Separar corretamente o que é interno/funilaria para não distorcer apuração.",
+              "Rotina diária de controle de MO realizada vs meta mensal."
+            ]
+          },
+
+          {
+            id: "produtivos_nps",
+            name: "Produtivos de Pós-Venda (Mecânicos) — NPS",
+            subtitle: "Campanha NPS Jeep — Q1 2026 (modelo igual ao de Assistentes)",
+            badges: ["Trimestral", "NPS Jeep", "Coletivo (AOP)"],
+            kpis: [
+              { label: "Meta NPS Jeep", value: "≥ 89%", note: "Faixa 1 — fechamento do Q1" },
+              { label: "Prêmio", value: "R$ 450", note: "Trimestral" },
+              { label: "Pagamento", value: "Folha", note: "04/2026" }
+            ],
+            rules: [
+              { t: "Gatilho", d: "Atingir ou superar NPS Jeep ≥ 89% no fechamento do Q1 (JAN/FEV/MAR)." },
+              { t: "Corte (AOP)", d: "Se a AOP/área operacional da filial não fechar ≥ 89%, não há pagamento." },
+              { t: "Corte (base)", d: "Qualidade da base deve ser ≥ 80%. Abaixo disso, não paga." },
+              { t: "Regra coletiva", d: "Se uma filial bater, mas a média das demais filiais da mesma AOP não bater, nenhuma recebe." }
+            ],
+            premios: [
+              { title: "Trimestral (Q1)", value: "R$ 450,00", detail: "Produtivos/mecânicos — se condições atendidas" }
+            ],
+            timeline: [
+              { when: "Fechamento Q1", what: "Apuração NPS Jeep (JAN+FEV+MAR)", how: "Montadora / consolidação do quarter" },
+              { when: "04/2026", what: "Pagamento", how: "Folha de pagamento" }
+            ],
+            extras: [
+              "Qualidade percebida no pós-serviço impacta diretamente NPS (execução, entrega, retorno).",
+              "Evitar retrabalho: falha técnica costuma virar detrator com facilidade.",
+              "Checar padrão de limpeza/organização do veículo antes da entrega."
+            ]
+          }
+        ]
+      };
+
+      const KEY_MODE = "dva_campanhas_mode";
+      const KEY_ACTIVE = "dva_campanhas_active";
+
+      const $ = (id) => document.getElementById(id);
+
+      const state = {
+        mode: (localStorage.getItem(KEY_MODE) || "detalhado") === "compacto" ? "compacto" : "detalhado",
+        activeId: localStorage.getItem(KEY_ACTIVE) || (CAMP.sectors[0] && CAMP.sectors[0].id),
+        search: ""
+      };
+
+      const escapeHtml = (s) => (s ?? "").toString()
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+      const badge = (t) =>
+        `<span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-slate-200">${escapeHtml(t)}</span>`;
+
+      const icon = (id) => {
+        const m = {
+          assistentes: "fa-user-check",
+          consultores: "fa-comments",
+          gerentes: "fa-chart-line",
+          oficina: "fa-wrench",
+          produtivos_nps: "fa-star"
+        };
+        return m[id] || "fa-circle";
+      };
+
+      const toast = (msg) => {
+        if (typeof window.showToast === "function") return window.showToast(msg);
+        try { console.log(msg); } catch {}
+      };
+
+      const applySearch = (text) => {
+        const q = (state.search || "").trim().toLowerCase();
+        if (!q) return true;
+        return (text || "").toLowerCase().includes(q);
+      };
+
+      const sectorText = (sec) => {
+        const parts = [];
+        parts.push(sec.name, sec.subtitle);
+        (sec.badges||[]).forEach(b => parts.push(b));
+        (sec.kpis||[]).forEach(k => parts.push(k.label, k.value, k.note||""));
+        (sec.rules||[]).forEach(r => parts.push(r.t, r.d));
+        (sec.premios||[]).forEach(p => parts.push(p.title, p.value, p.detail||""));
+        (sec.timeline||[]).forEach(t => parts.push(t.when, t.what, t.how||""));
+        (sec.extras||[]).forEach(e => parts.push(e));
+        return parts.join(" • ");
+      };
+
+      const navButton = (sec, active, mobile=false) => {
+        const base = mobile
+          ? "shrink-0 px-3 py-2 rounded-2xl text-xs font-black uppercase tracking-wider border transition flex items-center gap-2"
+          : "w-full p-3 rounded-2xl border border-white/10 hover:border-white/20 bg-dark-950 hover:bg-white/5 transition flex items-center justify-between gap-3";
+        const on = mobile
+          ? "bg-white/10 border-jeep/30 text-white"
+          : "bg-white/5 border-jeep/30";
+        const off = mobile
+          ? "bg-dark-950 border-white/10 text-slate-300 hover:text-white hover:bg-white/5"
+          : "bg-dark-950";
+        const cls = `${base} ${active ? on : off}`;
+        const left = mobile
+          ? `<i class="fa-solid ${icon(sec.id)} text-jeep"></i><span>${escapeHtml(sec.name.split("—")[0].trim())}</span>`
+          : `<div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-dark-900 border border-white/10 flex items-center justify-center text-slate-300">
+                  <i class="fa-solid ${icon(sec.id)}"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm font-display font-bold text-white truncate">${escapeHtml(sec.name)}</div>
+                  <div class="text-[10px] text-slate-500 truncate">${escapeHtml(sec.subtitle)}</div>
+                </div>
+              </div>`;
+        const right = mobile ? "" : `<i class="fa-solid fa-chevron-right text-slate-600"></i>`;
+        return `<button class="${cls}" data-camp-nav="${sec.id}">${left}${right}</button>`;
+      };
+
+      const kpiCard = (k) => `
+        <div class="glass-card rounded-2xl p-5 border border-white/5">
+          <div class="text-[10px] uppercase font-black tracking-widest text-slate-500">${escapeHtml(k.label)}</div>
+          <div class="mt-1 text-2xl font-display font-black text-white tracking-tight">${escapeHtml(k.value)}</div>
+          <div class="mt-1 text-xs text-slate-500">${escapeHtml(k.note||"")}</div>
+        </div>
+      `;
+
+      const ruleRow = (r, idx) => {
+        const compact = state.mode === "compacto";
+        const dCls = compact ? "text-xs text-slate-500 leading-relaxed" : "text-sm text-slate-300 leading-relaxed";
+        return `
+          <div class="p-4 rounded-2xl bg-dark-950 border border-white/5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-sm font-display font-bold text-white">${escapeHtml(r.t)}</div>
+                <div class="mt-1 ${dCls}">${escapeHtml(r.d)}</div>
+              </div>
+              <div class="text-[10px] font-mono text-slate-600">#${String(idx+1).padStart(2,"0")}</div>
+            </div>
+          </div>
+        `;
+      };
+
+      const premioCard = (p) => `
+        <div class="glass-card rounded-2xl p-5 border border-white/5">
+          <div class="text-sm font-display font-bold text-white">${escapeHtml(p.title)}</div>
+          <div class="mt-1 text-xl font-display font-black text-jeep">${escapeHtml(p.value)}</div>
+          <div class="mt-1 text-xs text-slate-500 leading-relaxed">${escapeHtml(p.detail||"")}</div>
+        </div>
+      `;
+
+      const timelineItem = (t) => `
+        <div class="flex gap-3">
+          <div class="flex flex-col items-center">
+            <div class="w-2.5 h-2.5 rounded-full bg-jeep"></div>
+            <div class="w-px flex-1 bg-white/10"></div>
+          </div>
+          <div class="pb-2">
+            <div class="text-[10px] uppercase font-black tracking-widest text-slate-600">${escapeHtml(t.when)}</div>
+            <div class="text-sm font-display font-bold text-white">${escapeHtml(t.what)}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(t.how||"")}</div>
+          </div>
+        </div>
+      `;
+
+      const setMode = (mode) => {
+        state.mode = mode === "compacto" ? "compacto" : "detalhado";
+        localStorage.setItem(KEY_MODE, state.mode);
+        const onCls = "px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-jeep text-black border border-jeep/50";
+        const offCls = "px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-white/5 hover:bg-white/10 transition border border-white/10 text-white";
+        $("campBtnCompact").className = (state.mode === "compacto") ? onCls : offCls;
+        $("campBtnDetalhado").className = (state.mode === "detalhado") ? onCls : offCls;
+      };
+
+      const setActive = (id) => {
+        if (!CAMP.sectors.some(s => s.id === id)) return;
+        state.activeId = id;
+        localStorage.setItem(KEY_ACTIVE, id);
+        render();
+      };
+
+      const renderNav = () => {
+        const nav = $("campNav");
+        const navM = $("campNavMobile");
+        if (nav) nav.innerHTML = CAMP.sectors.map(s => navButton(s, s.id === state.activeId)).join("");
+        if (navM) navM.innerHTML = CAMP.sectors.map(s => navButton(s, s.id === state.activeId, true)).join("");
+
+        const bind = (root) => {
+          if (!root) return;
+          root.querySelectorAll("[data-camp-nav]").forEach(btn => {
+            btn.addEventListener("click", () => setActive(btn.getAttribute("data-camp-nav")));
+          });
+        };
+        bind(nav);
+        bind(navM);
+      };
+
+      const render = () => {
+        const sec = CAMP.sectors.find(s => s.id === state.activeId) || CAMP.sectors[0];
+        if (!sec) return;
+
+        const label = $("campActiveIdLabel");
+        if (label) label.textContent = sec.id;
+
+        $("campSectorTitle").textContent = sec.name;
+        $("campSectorSubtitle").textContent = sec.subtitle;
+
+        $("campBadges").innerHTML = (sec.badges||[]).map(badge).join("");
+        $("campKpiGrid").innerHTML = (sec.kpis||[]).map(kpiCard).join("");
+
+        const rulesAll = sec.rules || [];
+        const rules = rulesAll.filter(r => applySearch(`${r.t} ${r.d}`));
+        $("campRulesCount").textContent = `${rules.length}/${rulesAll.length}`;
+        $("campRulesList").innerHTML = rules.map(ruleRow).join("");
+
+        const premiosAll = sec.premios || [];
+        const premios = premiosAll.filter(p => applySearch(`${p.title} ${p.value} ${p.detail||""}`));
+        $("campPremiosHint").textContent = `${premios.length}/${premiosAll.length}`;
+        $("campPremiosGrid").innerHTML = premios.map(premioCard).join("");
+
+        const tlAll = sec.timeline || [];
+        const tl = tlAll.filter(t => applySearch(`${t.when} ${t.what} ${t.how||""}`));
+        $("campTimeline").innerHTML = tl.map(timelineItem).join("");
+
+        const extrasBox = $("campExtrasBox");
+        if (extrasBox) extrasBox.classList.toggle("hidden", state.mode === "compacto");
+        $("campExtrasList").innerHTML = (sec.extras||[]).filter(x => applySearch(x))
+          .map(x => `<li>• ${escapeHtml(x)}</li>`).join("");
+
+        $("campFooterLeft").textContent = `Setor: ${sec.name} • Período: ${CAMP.q.start} a ${CAMP.q.end}`;
+
+        renderNav(); // keep nav states in sync
+      };
+
+      const init = () => {
+        // elements must exist (tab inserted)
+        if (!$("campSectorTitle")) return;
+
+        setMode(state.mode);
+
+        $("campSearchInput").addEventListener("input", (e) => {
+          state.search = e.target.value || "";
+          render();
+        });
+
+        $("campBtnCompact").addEventListener("click", () => { setMode("compacto"); render(); });
+        $("campBtnDetalhado").addEventListener("click", () => { setMode("detalhado"); render(); });
+
+        $("campBtnCopyResumo").addEventListener("click", async () => {
+          const sec = CAMP.sectors.find(s => s.id === state.activeId) || CAMP.sectors[0];
+          const lines = [];
+          lines.push(`${sec.name} — ${sec.subtitle}`);
+          lines.push(`Período: ${CAMP.q.start} a ${CAMP.q.end}`);
+          lines.push("");
+          lines.push("KPIs:");
+          (sec.kpis||[]).forEach(k => lines.push(`- ${k.label}: ${k.value} (${k.note||""})`));
+          lines.push("");
+          lines.push("Regras:");
+          (sec.rules||[]).forEach((r,i) => lines.push(`- [${i+1}] ${r.t}: ${r.d}`));
+          lines.push("");
+          lines.push("Premiação:");
+          (sec.premios||[]).forEach(p => lines.push(`- ${p.title}: ${p.value} — ${p.detail||""}`));
+          lines.push("");
+          lines.push("Calendário:");
+          (sec.timeline||[]).forEach(t => lines.push(`- ${t.when}: ${t.what} (${t.how||""})`));
+          const text = lines.join("\n").trim();
+
+          try {
+            await navigator.clipboard.writeText(text);
+            toast("Resumo copiado!");
+          } catch {
+            toast("Não consegui copiar automaticamente.");
+          }
+        });
+
+        $("campBtnPrint").addEventListener("click", () => window.print());
+
+        renderNav();
+        render();
+      };
+
+      document.addEventListener("DOMContentLoaded", init);
+    })();
+  </script>
+
 </body>
 </html>
