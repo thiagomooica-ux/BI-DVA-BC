@@ -7,6 +7,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -405,6 +406,132 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
   <script>
     /* --- 1. ESTADO & DADOS INICIAIS --- */
     const STORAGE_KEY = "dva_bi_v3_fixed";
+
+    /* --- 1.1 SUPABASE CLOUD SYNC (persistência entre PCs) --- */
+    const SB_URL = "https://xibqbdgcyuszsrquaodp.supabase.co";
+    const SB_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpYnFiZGdjeXVzenNycXVhb2RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MzkwOTMsImV4cCI6MjA4NzAxNTA5M30.mmHSTdRGgLSNJqb_cB1i3sf2kNa5INyMZB-LFd15Lpg";
+    // Bucket e nomes fixos (compatível com seu padrão anterior "latest.xlsx do cloud")
+    const SB_BUCKET = "cloud";
+    const SB_OBJ_XLSX = "latest.xlsx";
+    const SB_OBJ_STATE = "latest_state.json";
+    const SB_TIMEOUT_MS = 15000;
+
+    let _sb = null;
+
+    function sbClient() {
+      try {
+        if (_sb) return _sb;
+        if (!window.supabase) return null;
+        _sb = window.supabase.createClient(SB_URL, SB_ANON_KEY);
+        return _sb;
+      } catch (e) {
+        console.warn("Supabase init falhou:", e);
+        return null;
+      }
+    }
+
+    function withTimeout(promise, ms = SB_TIMEOUT_MS) {
+      return Promise.race([
+        promise,
+        new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))
+      ]);
+    }
+
+    async function sbUpload(path, blob, contentType) {
+      const sb = sbClient();
+      if (!sb) throw new Error("Supabase não disponível");
+      const { data, error } = await withTimeout(
+        sb.storage.from(SB_BUCKET).upload(path, blob, {
+          cacheControl: "0",
+          upsert: true,
+          contentType
+        })
+      );
+      if (error) throw error;
+      return data;
+    }
+
+    async function sbDownload(path) {
+      const sb = sbClient();
+      if (!sb) throw new Error("Supabase não disponível");
+      const { data, error } = await withTimeout(sb.storage.from(SB_BUCKET).download(path));
+      if (error) throw error;
+      return data; // Blob
+    }
+
+    async function sbTryLoadRemoteState() {
+      // Carrega estado salvo em nuvem (se existir) e aplica por cima do localStorage
+      try {
+        const blob = await sbDownload(SB_OBJ_STATE);
+        const txt = await blob.text();
+        const remote = JSON.parse(txt);
+
+        // Validação mínima para evitar quebrar se tiver lixo no bucket
+        if (!remote || typeof remote !== "object" || !remote.data || !remote.config) {
+          console.warn("Estado remoto inválido, ignorando.");
+          return false;
+        }
+
+        // Merge conservador
+        state = {
+          ...state,
+          ...remote,
+          config: { ...state.config, ...(remote.config || {}) },
+          data: remote.data || state.data
+        };
+
+        // Persistir localmente
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        updateTimeDisplay();
+        render();
+        showToast("Dados carregados da nuvem.");
+        return true;
+      } catch (e) {
+        // Silencioso (primeiro acesso pode não ter arquivo remoto)
+        console.warn("Sem estado remoto (ok):", e?.message || e);
+        return false;
+      }
+    }
+
+    async function sbSyncAfterUpload(wb) {
+      // Salva: (1) planilha normalizada como XLSX e (2) estado do app em JSON
+      const sb = sbClient();
+      if (!sb) return;
+
+      try {
+        showToast("Salvando na nuvem...");
+        // 1) XLSX (sempre latest.xlsx)
+        const xlsxBuf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const xlsxBlob = new Blob([xlsxBuf], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+        await sbUpload(SB_OBJ_XLSX, xlsxBlob, xlsxBlob.type);
+
+        // 2) Estado JSON
+        const payload = {
+          ...state,
+          __cloud: {
+            savedAt: new Date().toISOString(),
+            bucket: SB_BUCKET,
+            file: SB_OBJ_XLSX,
+            v: 1
+          }
+        };
+        const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        await sbUpload(SB_OBJ_STATE, jsonBlob, "application/json");
+
+        // Atualiza relógio do header com base real
+        state.__cloud = payload.__cloud;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        updateTimeDisplay();
+
+        showToast("Planilha salva na nuvem (OK).");
+      } catch (e) {
+        console.error("Falha no sync Supabase:", e);
+        showToast("Importado, mas falhou salvar na nuvem.");
+      }
+    }
+
     
     // Configuração dos KPIs
     const KPIS = [
@@ -691,8 +818,10 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
     }
 
     function updateTimeDisplay() {
-      const now = new Date();
-      document.getElementById('lastUpdateText').textContent = "Atualizado: " + now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      const iso = state && state.__cloud && state.__cloud.savedAt ? state.__cloud.savedAt : null;
+      const dt = iso ? new Date(iso) : new Date();
+      const hhmm = dt.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      document.getElementById('lastUpdateText').textContent = "Atualizado: " + hhmm + (iso ? " (nuvem)" : "");
     }
 
     function showToast(msg = "Dados Salvos!") {
@@ -963,7 +1092,9 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
         saveToStorage();
         render();
         showToast(changed ? "Planilha importada!" : "Planilha lida, mas nenhum campo foi aplicado.");
-      } catch(err) {
+        // Persistência entre PCs: salva latest.xlsx + estado no Supabase
+        sbSyncAfterUpload(wb);
+} catch(err) {
         console.error(err);
         alert("Falha ao ler a planilha.\n\nDicas:\n• Confirme que é .ods/.xlsx/.xls/.csv\n• Para METAS 2026.ods, mantenha o layout por blocos\n• Se a 1ª aba tiver vários quadros, deixe o quadro principal (Faturamento/Passagens/Mão de Obra) no topo");
       } finally {
@@ -990,11 +1121,14 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
     document.getElementById('toggleOptional').addEventListener('change', e => { state.config.optional = e.target.checked; saveToStorage(); });
 
     // INIT
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       loadFromStorage();
       // Set Active Tab Initial
       document.querySelector('[data-tab="dashboard"]').click();
       updateTimeDisplay();
+
+      // Cloud sync (se existir estado remoto, substitui o local)
+      await sbTryLoadRemoteState();
     });
 
   </script>
