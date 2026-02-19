@@ -181,28 +181,28 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full lg:w-[26rem]">
-              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full lg:w-[36rem] xl:w-[38rem]">
+              <div class="glass-panel rounded-2xl p-3.5 border border-white/5 min-w-0">
                 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Ritmo ideal hoje</p>
-                <p id="fatExpectedBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-white break-words">R$ 0</p>
+                <p id="fatExpectedBig" class="min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black text-white">R$ 0</p>
                 <p class="text-[10px] text-slate-600 font-bold">meta × % dias úteis</p>
               </div>
 
-              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+              <div class="glass-panel rounded-2xl p-3.5 border border-white/5 min-w-0">
                 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Projeção mês</p>
-                <p id="fatProjBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-white break-words">R$ 0</p>
+                <p id="fatProjBig" class="min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black text-white">R$ 0</p>
                 <p class="text-[10px] text-slate-600 font-bold">realizado/dia útil × dias úteis</p>
               </div>
 
-              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+              <div class="glass-panel rounded-2xl p-3.5 border border-white/5 min-w-0">
                 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Gap (meta − projeção)</p>
-                <p id="fatGapBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-ram break-words">R$ 0</p>
+                <p id="fatGapBig" class="min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black text-ram">R$ 0</p>
                 <p class="text-[10px] text-slate-600 font-bold">quanto falta pela projeção</p>
               </div>
 
-              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+              <div class="glass-panel rounded-2xl p-3.5 border border-white/5 min-w-0">
                 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Necessário / dia útil</p>
-                <p id="fatNeededBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-jeep break-words">R$ 0</p>
+                <p id="fatNeededBig" class="min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black text-jeep">R$ 0</p>
                 <p class="text-[10px] text-slate-600 font-bold">para bater a meta</p>
               </div>
             </div>
@@ -676,6 +676,9 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
     const formatNum = v => Math.round(v).toLocaleString('pt-BR');
     const formatPct = v => (v*100).toFixed(1) + '%';
 
+    const formatMoneyCompact = v => formatMoney(v).replace(/^R\$\s+/, 'R$');
+
+
     function render() {
       // 1. Setup Data
       const [yStr, mStr] = state.month.split('-');
@@ -714,10 +717,10 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
       document.getElementById('fatMetaBig').textContent = formatMoney(fat.meta);
       document.getElementById('fatPctBig').textContent = formatPct(fat.pct);
 
-      document.getElementById('fatExpectedBig').textContent = formatMoney(fat.expected);
-      document.getElementById('fatProjBig').textContent = formatMoney(fat.proj);
-      document.getElementById('fatGapBig').textContent = formatMoney(fat.gap);
-      document.getElementById('fatNeededBig').textContent = formatMoney(fat.needed);
+      document.getElementById('fatExpectedBig').textContent = formatMoneyCompact(fat.expected);
+      document.getElementById('fatProjBig').textContent = formatMoneyCompact(fat.proj);
+      document.getElementById('fatGapBig').textContent = formatMoneyCompact(fat.gap);
+      document.getElementById('fatNeededBig').textContent = formatMoneyCompact(fat.needed);
 
       // Barra de progresso (realizado) + marcador (ritmo ideal por dias úteis)
       const fatFill = document.getElementById('fatBarFill');
@@ -729,10 +732,10 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
 
       // Cor dinâmica do Gap / Necessário
       const gapEl = document.getElementById('fatGapBig');
-      gapEl.className = `text-xl font-display font-black ${fat.gap > 0 ? 'text-ram' : 'text-emerald-400'}`;
+      gapEl.className = `min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black ${fat.gap > 0 ? 'text-ram' : 'text-emerald-400'}`;
 
       const needEl = document.getElementById('fatNeededBig');
-      needEl.className = `text-xl font-display font-black ${fat.needed > 0 ? 'text-jeep' : 'text-slate-500'}`;
+      needEl.className = `min-w-0 max-w-full tabular-nums whitespace-nowrap tracking-tight text-[clamp(1.05rem,2.0vw,1.35rem)] md:text-[clamp(1.10rem,1.6vw,1.40rem)] lg:text-[1.28rem] xl:text-[1.32rem] leading-none font-display font-black ${fat.needed > 0 ? 'text-jeep' : 'text-slate-500'}`;
 
       // Badge do HERO (status do faturamento)
       const fatBadge = document.getElementById('fatStatusBadge');
