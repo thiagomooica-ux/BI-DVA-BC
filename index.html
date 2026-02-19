@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DVA • BI Pós-Vendas (Funcional)</title>
 
+  <link rel="icon" type="image/png" href="favicon.png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -142,47 +144,71 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
 
       <section id="tab-dashboard" class="tab-content space-y-6 fade-in">
         
-        <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
-          <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-jeep/5 rounded-full blur-3xl pointer-events-none"></div>
-          
-          <div class="flex flex-col md:flex-row justify-between gap-6 relative z-10">
-            <div>
-              <div class="flex items-center gap-3 mb-2">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Ritmo do Mês (Dias Úteis)</h2>
-                <span id="paceBadge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-800 text-slate-400">Calculando...</span>
-              </div>
-              <div class="flex items-baseline gap-2">
-                <span id="timePctBig" class="text-5xl md:text-6xl font-display font-black text-white tracking-tighter">0%</span>
-                <span class="text-sm text-slate-400">do tempo decorrido</span>
-              </div>
-            </div>
-            
-            <div class="flex gap-8 text-right">
-              <div>
-                <p class="text-[10px] uppercase font-bold text-slate-500">Decorridos</p>
-                <p id="workdaysBig" class="text-2xl font-display font-bold text-white">0/0</p>
-              </div>
-              <div>
-                <p class="text-[10px] uppercase font-bold text-slate-500">Restantes</p>
-                <p id="remainingBig" class="text-2xl font-display font-bold text-jeep">0</p>
-              </div>
-            </div>
-          </div>
+        
+        <div id="fatHeroCard" class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden border border-white/5">
+          <div class="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 bg-jeep/6 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute bottom-0 left-0 -ml-32 -mb-32 w-[28rem] h-[28rem] bg-ram/6 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div class="mt-8">
-            <div class="flex justify-between text-xs text-slate-500 mb-2 font-medium">
-              <span>Dia 1</span>
-              <span id="progressBarLabel" class="text-white">Hoje</span>
-              <span>Fim do Mês</span>
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 relative z-10">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Faturamento Total</h2>
+                <span id="fatStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-800 text-slate-400">Calculando...</span>
+                <span id="fatTimeHint" class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">—</span>
+              </div>
+
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-2 min-w-0">
+                <span id="fatRealBig" class="min-w-0 max-w-full tabular-nums text-[clamp(2.4rem,9vw,4.6rem)] md:text-[clamp(3.0rem,5vw,4.8rem)] leading-[0.95] font-display font-black text-white tracking-tighter break-words">R$ 0</span>
+                <span class="text-sm text-slate-400 font-bold">Meta:</span>
+                <span id="fatMetaBig" class="text-sm text-slate-300 font-black">R$ 0</span>
+                <span class="text-xs text-slate-600 font-bold">•</span>
+                <span class="inline-flex items-baseline gap-2 whitespace-nowrap"><span class="text-sm text-slate-400 font-bold">Atingido:</span><span id="fatPctBig" class="text-sm text-slate-200 font-black">0%</span></span>
+              </div>
+
+              <div class="mt-4">
+                <div class="flex items-center justify-between text-[10px] uppercase font-bold text-slate-600 tracking-widest mb-2">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+                <div class="h-1.5 w-full bg-dark-950 rounded-full mb-3 relative overflow-hidden">
+                  <div id="fatBarFill" class="h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                  <div id="fatIdealMarker" class="absolute top-0 h-full w-0.5 bg-white shadow-[0_0_5px_white]" style="left: 0%" title="Ritmo ideal (meta proporcional aos dias úteis)"></div>
+                </div>
+                <p class="mt-2 text-[10px] text-slate-600 flex items-center gap-2">
+                  <i class="fa-solid fa-location-dot text-jeep"></i>
+                  <span>Marcador branco = ritmo ideal hoje (dias úteis). Se o preenchimento estiver antes, você está atrasado no ritmo; se estiver depois, adiantado.</span>
+                </p>
+              </div>
             </div>
-            <div class="h-4 w-full bg-dark-950 rounded-full overflow-hidden border border-white/5 relative">
-              <div id="timeBar" class="h-full bg-gradient-to-r from-slate-600 to-slate-200 transition-all duration-1000 ease-out" style="width: 0%"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full lg:w-[26rem]">
+              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Ritmo ideal hoje</p>
+                <p id="fatExpectedBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-white break-words">R$ 0</p>
+                <p class="text-[10px] text-slate-600 font-bold">meta × % dias úteis</p>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Projeção mês</p>
+                <p id="fatProjBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-white break-words">R$ 0</p>
+                <p class="text-[10px] text-slate-600 font-bold">realizado/dia útil × dias úteis</p>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Gap (meta − projeção)</p>
+                <p id="fatGapBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-ram break-words">R$ 0</p>
+                <p class="text-[10px] text-slate-600 font-bold">quanto falta pela projeção</p>
+              </div>
+
+              <div class="glass-panel rounded-2xl p-4 border border-white/5">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Necessário / dia útil</p>
+                <p id="fatNeededBig" class="min-w-0 max-w-full tabular-nums text-[clamp(1.15rem,4.5vw,1.65rem)] md:text-[clamp(1.25rem,2.2vw,1.8rem)] leading-tight font-display font-black text-jeep break-words">R$ 0</p>
+                <p class="text-[10px] text-slate-600 font-bold">para bater a meta</p>
+              </div>
             </div>
-            <p id="holidayHint" class="mt-2 text-[10px] text-slate-600 flex items-center gap-1">
-              <i class="fa-solid fa-info-circle"></i> <span>Calculando feriados...</span>
-            </p>
           </div>
         </div>
+
 
         <div id="kpiCards" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           </div>
@@ -264,7 +290,7 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
       </section>
       <section id="tab-campanhas" class="tab-content hidden space-y-6 fade-in pb-10">
 
-        <div class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden">
+        <div id="fatHeroCard" class="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden border border-white/5">
           <div class="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 bg-jeep/5 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute bottom-0 left-0 -ml-28 -mb-28 w-[28rem] h-[28rem] bg-ram/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -533,11 +559,19 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
     }
 
     
-    // Configuração dos KPIs
-    const KPIS = [
+    // Configuração dos KPIs (fonte única para metas/realizado e cálculos)
+    const KPIS_ALL = [
       { id: "faturamento", label: "Faturamento Total", type: "money", icon: "fa-sack-dollar" },
       { id: "passagens",   label: "Passagens Oficina", type: "count", icon: "fa-car" },
       { id: "mao_obra",    label: "Mão de Obra",       type: "money", icon: "fa-wrench" }
+    ];
+
+    // KPIs exibidos no Dashboard (cards menores)
+    // Troca solicitada: HERO = Faturamento Total (acima) e Ritmo do Mês como card menor
+    const KPIS_DASH = [
+      { id: "pace",        label: "Ritmo do Mês (Dias Úteis)", type: "pace", icon: "fa-gauge-high" },
+      { id: "passagens",   label: "Passagens Oficina",         type: "count", icon: "fa-car" },
+      { id: "mao_obra",    label: "Mão de Obra",               type: "money", icon: "fa-wrench" }
     ];
 
     // Meses
@@ -647,32 +681,147 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
       const [yStr, mStr] = state.month.split('-');
       const wd = getWorkdays(parseInt(yStr), parseInt(mStr));
       
-      // 2. Hero Section
-      document.getElementById('timePctBig').textContent = formatPct(wd.progress);
-      document.getElementById('workdaysBig').textContent = `${wd.elapsed}/${wd.total}`;
-      document.getElementById('remainingBig').textContent = wd.remaining;
-      document.getElementById('timeBar').style.width = `${wd.progress * 100}%`;
-      document.getElementById('progressBarLabel').textContent = wd.progress >= 1 ? "Encerrado" : "Hoje";
-      
-      // Badge de Ritmo Global (Média simples dos status)
-      let goodCounts = 0;
-      let score = 0;
-      KPIS.forEach(k => {
-        const res = calculateKPI(k.id, state.month, wd);
-        if(res.status === 'won' || res.status === 'good') score++;
-      });
-      const paceEl = document.getElementById('paceBadge');
-      if(score === 3) { paceEl.textContent = "EXCELENTE"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500 text-black"; }
-      else if(score >= 1) { paceEl.textContent = "MISTO"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-jeep text-black"; }
-      else { paceEl.textContent = "CRÍTICO"; paceEl.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-ram text-white"; }
+      // 2. Hero Section (Faturamento Total)
+      const fat = calculateKPI('faturamento', state.month, wd);
 
-      document.getElementById('holidayHint').innerHTML = `<i class="fa-solid fa-calendar-check text-jeep"></i> ${wd.total} Dias úteis considerados.`;
+
+      // Estilo do card (igual aos KPIs abaixo)
+      const heroBorder =
+        (fat.status === 'won') ? "border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]" :
+        (fat.status === 'good') ? "border-emerald-500/50" :
+        (fat.status === 'warning') ? "border-jeep/50" :
+        (fat.status === 'bad') ? "border-ram/50" :
+        "border-white/5";
+
+      const heroBar =
+        (fat.status === 'won' || fat.status === 'good') ? "bg-emerald-500" :
+        (fat.status === 'warning') ? "bg-jeep" :
+        (fat.status === 'bad') ? "bg-red-500" :
+        "bg-slate-600";
+
+      const heroCardEl = document.getElementById('fatHeroCard');
+      if (heroCardEl) {
+        heroCardEl.className = `glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden border ${heroBorder}`;
+      }
+
+
+      // Hint de tempo (dias úteis)
+      document.getElementById('fatTimeHint').textContent =
+        `${wd.elapsed}/${wd.total} dias úteis • restam ${wd.remaining} • ${formatPct(wd.progress)} do mês`;
+
+      // Valores (hero)
+      document.getElementById('fatRealBig').textContent = formatMoney(fat.real);
+      document.getElementById('fatMetaBig').textContent = formatMoney(fat.meta);
+      document.getElementById('fatPctBig').textContent = formatPct(fat.pct);
+
+      document.getElementById('fatExpectedBig').textContent = formatMoney(fat.expected);
+      document.getElementById('fatProjBig').textContent = formatMoney(fat.proj);
+      document.getElementById('fatGapBig').textContent = formatMoney(fat.gap);
+      document.getElementById('fatNeededBig').textContent = formatMoney(fat.needed);
+
+      // Barra de progresso (realizado) + marcador (ritmo ideal por dias úteis)
+      const fatFill = document.getElementById('fatBarFill');
+      if (fatFill) {
+        fatFill.className = `h-full ${heroBar} transition-all duration-700 ease-out`;
+        fatFill.style.width = `${Math.min(100, fat.pct * 100)}%`;
+      }
+      document.getElementById('fatIdealMarker').style.left = `${wd.progress * 100}%`;
+
+      // Cor dinâmica do Gap / Necessário
+      const gapEl = document.getElementById('fatGapBig');
+      gapEl.className = `text-xl font-display font-black ${fat.gap > 0 ? 'text-ram' : 'text-emerald-400'}`;
+
+      const needEl = document.getElementById('fatNeededBig');
+      needEl.className = `text-xl font-display font-black ${fat.needed > 0 ? 'text-jeep' : 'text-slate-500'}`;
+
+      // Badge do HERO (status do faturamento)
+      const fatBadge = document.getElementById('fatStatusBadge');
+      if (fat.status === 'nodata') {
+        fatBadge.textContent = "SEM META";
+        fatBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-800 text-slate-300";
+      } else if (fat.status === 'won') {
+        fatBadge.textContent = "META BATIDA";
+        fatBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500 text-black";
+      } else if (fat.status === 'good') {
+        fatBadge.textContent = "NO EIXO";
+        fatBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+      } else if (fat.status === 'warning') {
+        fatBadge.textContent = "ATENÇÃO";
+        fatBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-jeep/20 text-jeep border border-jeep/30";
+      } else {
+        fatBadge.textContent = "CRÍTICO";
+        fatBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-ram/20 text-ram border border-ram/30";
+      }
+
+      // Badge de Ritmo Global (média simples dos 3 KPIs operacionais)
+      let score = 0;
+      KPIS_ALL.forEach(k => {
+        const res = calculateKPI(k.id, state.month, wd);
+        if (res.status === 'won' || res.status === 'good') score++;
+      });
+
+      let paceText = "CRÍTICO";
+      let paceCls = "bg-ram/20 text-ram border border-ram/30";
+      if (score === 3) { paceText = "EXCELENTE"; paceCls = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"; }
+      else if (score >= 1) { paceText = "MISTO"; paceCls = "bg-jeep/20 text-jeep border border-jeep/30"; }
+
+      const paceInfo = { text: paceText, cls: paceCls, workdays: wd };
+
 
       // 3. KPI Cards
       const cardsContainer = document.getElementById('kpiCards');
       cardsContainer.innerHTML = '';
       
-      KPIS.forEach(def => {
+      KPIS_DASH.forEach(def => {
+        // Card especial: Ritmo do Mês (dias úteis) — versão compacta
+        if (def.type === 'pace') {
+          const w = paceInfo.workdays;
+          const card = document.createElement('div');
+          const paceBorder = (paceInfo.text === 'EXCELENTE') ? 'border-emerald-500/50' : (paceInfo.text === 'MISTO') ? 'border-jeep/50' : 'border-ram/50';
+          const paceBar = (paceInfo.text === 'EXCELENTE') ? 'bg-emerald-500' : (paceInfo.text === 'MISTO') ? 'bg-jeep' : 'bg-red-500';
+          card.className = `glass-card rounded-2xl p-5 border ${paceBorder} relative overflow-hidden group`;
+          card.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-dark-900 flex items-center justify-center text-xl text-slate-400 group-hover:text-white transition-colors">
+                  <i class="fa-solid ${def.icon}"></i>
+                </div>
+                <div>
+                  <h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">${def.label}</h3>
+                  <div class="text-[10px] text-slate-600">${w.elapsed}/${w.total} dias úteis • restam ${w.remaining}</div>
+                </div>
+              </div>
+              <div class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${paceInfo.cls}">${paceInfo.text}</div>
+            </div>
+
+            <div class="flex items-baseline gap-2 mb-2">
+              <span class="text-2xl font-display font-black text-white">${formatPct(w.progress)}</span>
+              <span class="text-xs text-slate-500 font-bold">do mês (dias úteis)</span>
+            </div>
+
+            <div class="h-1.5 w-full bg-dark-950 rounded-full mb-3 relative overflow-hidden">
+              <div class="absolute h-full ${paceBar}" style="width: ${Math.min(100, w.progress*100)}%"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs border-t border-white/5 pt-3">
+              <div>
+                <span class="block text-[10px] text-slate-600 uppercase">Dias úteis total</span>
+                <span class="font-bold text-slate-300">${w.total}</span>
+              </div>
+              <div class="text-right">
+                <span class="block text-[10px] text-slate-600 uppercase">Dias úteis decorridos</span>
+                <span class="font-bold text-slate-300">${w.elapsed}</span>
+              </div>
+            </div>
+
+            <p class="mt-3 text-[10px] text-slate-600 flex items-center gap-1">
+              <i class="fa-solid fa-calendar-check text-jeep"></i> ${w.total} dias úteis considerados.
+            </p>
+          `;
+          cardsContainer.appendChild(card);
+          return;
+        }
+
         const data = calculateKPI(def.id, state.month, wd);
         const isMoney = def.type === 'money';
         const valFmt = isMoney ? formatMoney : formatNum;
@@ -741,7 +890,7 @@ h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
       // 4. Data Table (Inputs)
       const tbody = document.getElementById('dataTableBody');
       tbody.innerHTML = '';
-      KPIS.forEach(def => {
+      KPIS_ALL.forEach(def => {
         const metaVal = state.data.metas[def.id][state.month] || 0;
         const realVal = state.data.realizado[def.id][state.month] || 0;
         
